@@ -1,0 +1,17 @@
+# Tab completions for the 'hints' function
+complete -c hints -f
+complete -c hints -a search   -d "Interactive fzf search"
+complete -c hints -a list     -d "Show available sections"
+complete -c hints -a all      -d "Show all (no pager)"
+complete -c hints -a git      -d "Git shortcuts"
+complete -c hints -a system   -d "System & navigation"
+complete -c hints -a files    -d "File operations"
+complete -c hints -a pkg      -d "Pacman / Yay"
+complete -c hints -a docker   -d "Docker"
+complete -c hints -a compose  -d "Docker Compose"
+complete -c hints -a npm      -d "npm / pnpm"
+complete -c hints -a cargo    -d "Cargo / Go"
+complete -c hints -a systemctl -d "Systemctl"
+complete -c hints -a functions -d "General functions"
+complete -c hints -a dev      -d "Developer functions"
+complete -c hints -a keys     -d "Keybindings"

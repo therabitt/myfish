@@ -1,0 +1,22 @@
+status is-interactive; or return
+
+# ── Git Workflow Abbreviations ──────────────────────────────────
+abbr lg   'lazygit'
+abbr ga   'git add .'
+abbr gc   'git commit -am'
+abbr gp   'git push'
+abbr gpl  'git pull'
+abbr gs   'git status'
+abbr gd   'git diff'
+abbr gl   'git log --oneline --graph --decorate -15'
+abbr gst  'git stash'
+abbr gsp  'git stash pop'
+abbr gsw  'git switch'
+abbr gsm  'git switch main'
+abbr gb   'git branch'
+abbr gbd  'git branch -d'
+abbr gco  'git checkout'
+abbr gsh  'git show'
+abbr gcl  'git clone'
+abbr grs  'git reset'
+abbr grb  'git rebase -i'
