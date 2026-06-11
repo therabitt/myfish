@@ -1,4 +1,4 @@
-function pyenv --description "Create or activate Python virtual environment"
+function venv --description "Create or activate Python virtual environment"
     set -l venv_dir "venv"
     if set -q argv[1]
         set venv_dir $argv[1]

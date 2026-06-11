@@ -1,5 +1,6 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
 SETUVAR --export EDITOR:vim
+SETUVAR --export PYENV_ROOT:/home/therabitt/\x2epyenv
 SETUVAR __fish_initialized:4300
-SETUVAR fish_user_paths:/home/therabitt/\x2espicetify
+SETUVAR fish_user_paths:/home/therabitt/\x2enpm\x2dglobal/bin\x1e/home/therabitt/\x2espicetify\x1e/opt/rocm/bin

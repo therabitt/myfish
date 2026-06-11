@@ -6,18 +6,62 @@ function hints --description "Show shortcuts, functions, and keybindings"
     # hints list         → show available sections
     #
     # Sections: git, system, files, pkg, docker, compose, npm,
-    #           cargo, systemctl, functions, dev, keys
+    #           cargo, systemctl, ide, functions, dev, keys
 
-    # ── Helpers ─────────────────────────────────────────────────
+
+    set -g _hints_col 0
+
     function _hr
-        set -l padded (printf "%-10s" "$argv[1]")
-        printf "  \e[1;32m%s\e[0m\e[90m→ \e[0m\e[36m%s\e[0m\n" "$padded" "$argv[2..]"
+        # Get terminal width, default to 80 if not set
+        set -l cols $COLUMNS
+        if test -z "$cols"
+            set cols 80
+        end
+
+        # Fallback to single column if terminal is too narrow
+        if test $cols -lt 100
+            printf "  \e[1;32m%-10s\e[0m\e[90m→ \e[0m\e[36m%s\e[0m\n" "$argv[1]" "$argv[2..]"
+            set _hints_col 0
+            return
+        end
+
+        set -l half_width (math -s0 "$cols / 2")
+
+        set -l val_len (string length "$argv[2..]")
+        set -l pad_len (math "$half_width - 14 - $val_len")
+        if test $pad_len -lt 1
+            set pad_len 1
+        end
+        set -l padding (string repeat -n $pad_len " ")
+
+        if test $_hints_col -eq 0
+            printf "  \e[1;32m%-10s\e[0m\e[90m→ \e[0m\e[36m%s\e[0m%s" "$argv[1]" "$argv[2..]" "$padding"
+            set _hints_col 1
+        else
+            printf "  \e[1;32m%-10s\e[0m\e[90m→ \e[0m\e[36m%s\e[0m\n" "$argv[1]" "$argv[2..]"
+            set _hints_col 0
+        end
     end
 
     function _hh
+        if test $_hints_col -eq 1
+            echo ""
+            set _hints_col 0
+        end
         echo ""
         printf "  \e[1;%sm%s\e[0m\n" "$argv[1]" "$argv[2..]"
-        printf "  \e[90m─────────────────────────────────────────────────────\e[0m\n"
+        
+        # Draw line spanning the terminal width
+        set -l cols $COLUMNS
+        if test -z "$cols"
+            set cols 80
+        end
+        set -l line_width (math "$cols - 4")
+        if test $line_width -lt 10
+            set line_width 76
+        end
+        set -l line (string repeat -n $line_width "─")
+        printf "  \e[90m%s\e[0m\n" "$line"
     end
 
     # ── Section Renderers ───────────────────────────────────────
@@ -95,10 +139,23 @@ function hints --description "Show shortcuts, functions, and keybindings"
         _hr scsp "systemctl stop"
     end
 
+    function _hints_ide
+        _hh 35 "📝 IDEs & Text Editors"
+        _hr vc   "code (VS Code)"; _hr cs   cursor
+        _hr zd   zed;              _hr sb   "subl (Sublime)"
+        _hr n    nano;             _hr v    vim
+        _hr nv   nvim;             _hr id   "idea (IntelliJ)"
+        _hr ag   "antigravity-ide"; _hr lg   lazygit
+    end
+
+
+
+
+
     function _hints_functions
         _hh 33 "🔧 Functions — General"
         _hr mkcd    "Create dir and cd into it"
-        _hr pyenv   "Create/activate Python venv"
+        _hr venv    "Create/activate Python venv"
         _hr extract "Extract any archive format"
         _hr conf    "Edit config files (\$EDITOR)"
         _hr fe      "Fuzzy find and edit file"
@@ -141,6 +198,7 @@ function hints --description "Show shortcuts, functions, and keybindings"
         _hints_npm
         _hints_cargo
         _hints_systemctl
+        _hints_ide
         _hints_functions
         _hints_dev
         _hints_keys
@@ -148,12 +206,16 @@ function hints --description "Show shortcuts, functions, and keybindings"
     end
 
     # ── Section map ─────────────────────────────────────────────
-    set -l sections git system files pkg docker compose npm cargo systemctl functions dev keys
+    set -l sections git system files pkg docker compose npm cargo systemctl ide functions dev keys
 
     # ── Handle arguments ────────────────────────────────────────
     if not set -q argv[1]
-        # Default: pager mode
-        _hints_all | less -R
+        # Default: pager mode (bat if available, otherwise less)
+        if type -q bat
+            _hints_all | bat --paging=always --style=plain
+        else
+            _hints_all | less -R
+        end
     else
         switch $argv[1]
             case search s
@@ -178,6 +240,7 @@ function hints --description "Show shortcuts, functions, and keybindings"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" npm "npm / pnpm"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" cargo "Cargo / Go"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" systemctl "Systemctl"
+                printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" ide "IDEs & Editors"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" functions "General functions"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" dev "Developer functions"
                 printf "  \e[1;32m%-12s\e[0m\e[36m%s\e[0m\n" keys "Keybindings"
@@ -202,6 +265,8 @@ function hints --description "Show shortcuts, functions, and keybindings"
                 _hints_cargo; echo ""
             case systemctl sc service
                 _hints_systemctl; echo ""
+            case ide editor
+                _hints_ide; echo ""
             case functions fn func
                 _hints_functions; echo ""
             case dev developer
@@ -217,9 +282,10 @@ function hints --description "Show shortcuts, functions, and keybindings"
     end
 
     # Cleanup
+    set -e _hints_col
     functions -e _hr _hh
     functions -e _hints_git _hints_system _hints_files _hints_pkg
     functions -e _hints_docker _hints_compose _hints_npm _hints_cargo
-    functions -e _hints_systemctl _hints_functions _hints_dev _hints_keys
+    functions -e _hints_systemctl _hints_ide _hints_functions _hints_dev _hints_keys
     functions -e _hints_all
 end

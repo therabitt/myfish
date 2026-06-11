@@ -14,3 +14,9 @@ if status is-interactive
         echo -en "\e]133;A\e\\"
     end
 end
+
+set -gx GTK_IM_MODULE fcitx5
+set -gx QT_IM_MODULE fcitx5
+set -gx XMODIFIERS @im=fcitx5
+
+pyenv init - | source
